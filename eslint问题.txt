@@ -1,0 +1,80 @@
+//error Component name “Home“ should always be multi-word vue/multi-word-component-names
+参考 VueRouter .eslintrc
+
+vue-cli在init初始化时会询问是否需要添加ESLint，确认之后在创建的项目中就会出现.eslintignore和.eslintrc.js两个文件
+.eslintignore类似Git的.gitignore用来忽略一些文件不使用ESLint检查。
+.eslintrc.js是ESLint配置文件，用来设置插件、自定义规则、解析器等配置。
+
+arrow-parems 允许箭头函数参数使用括号,具体操作请看文档
+generator-star-spacing 允许方法之间加星号，如function * generator() {}。文档在此。特地查了下，发现这是ES6提供的生成器函数，回头学习下。
+no-debugger' 允许在开发环境下使用debugger。这个比较简单，不过还是贴下文档便于查看。
+
+* “off” 或 0 - 关闭这条规则
+* “warn” 或 1 - 违反规则会警告（不会影响项目运行）
+* “error” 或 2 - 违反规则会报错（屏幕上一堆错误代码~）
+
+rules: {
+    //0--不启用； 1--出现问题会有警告； 2--出现问题会报错
+    indent: [2,2,
+      {
+        SwitchCase: 1, // （默认：0）指定 switch-case 语句的缩进级别
+      },
+    ], // 强制使用一致的缩进
+    // eqeqeq: [2, 'always'], // 要求使用 === 和 !==
+    eqeqeq: ['off'], // 关闭要求使用 === he !==
+    semi: [2, 'never'], // 要求或禁止使用分号代替 ASI
+    quotes: [2, 'single'], // 强制使用一致的反勾号、双引号或单引号
+    'no-console': 'off',
+    camelcase: 2, //强制驼峰法命名
+    // allow debugger during development
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+  },
+
+
+错误合集
+
+error  Expected indentation of 6 spaces but found 8  indent
+原因：写代码的时候有空格问题
+要么自己把空格问题编辑好，要么忽略配置
+在文件夹eslintrc.js中加入
+rules: {
+'indent': 0,
+'space-before-function-paren': 0
+}
+
+
+Trailing spaces not allowed  no-trailing-spaces
+原因：空格带多了，具体到哪一行，把空格给删了
+
+
+Newline required at end of file but not found  eol-last
+原因：页面最后少了一行，在最后加一行就行了
+  
+
+  1. Do not use ‘new' for side effects
+  删除了/* eslint-disable no-new*/这段注释引发的，/* eslint-disable */这段注释的作用就是不让eslint检查注释下面的代码。
+  不可以直接new一个新对象，需要将新对象赋值给一个变量。
+  var vm = new Vue()
+
+  2. Strings must use singlequote
+  字符串必须用单引号
+
+  3. Expected space(s) after “return”
+  括号两侧必须要有空格隔开
+
+  4. Expected indentation of 8 spaces but found 6
+  使用两个空格进行缩进。
+
+
+
+在vue.config.js文件中添加requireConfigFile: false，或者在.eslintrc.js文件中添加requireConfigFile: false（分情况），的确能够解决，但是归根结底，产生这个错误的原因到底是什么呢？
+搜索了解到：具体原因是babel的配置文件默认是在根目录进行查找的，而我的编辑器打开的目录不是项目运行的目录。
+我把之前加的requireConfigFile: false删去，把项目所在目录作为根目录重新打开，果然没有再报错了。
+
+eslint根据eslint配置文件的parserOption，知道了要使用babel对代码进行解析，但是解析babel需要使用babel配置文件，由于找不到配置文件（babel配置文件默认需要放在根目录下），所以会报错。因此，添加requireConfigFile: false，本质上是告诉eslint，不用查找这个配置文件了，虽然表面上可以解决这个报错，但是在babel配置文件里写的东西也就失效了。
+所以重新打开项目，把项目运行目录作为根目录，babel的配置文件的位置放置正确了，eslint就不会报错了。
+
+Either disable config file checking with requireConfigFile: false, or configure Babel so that it can find the config files.
+  使用`vue-cli`创建的项目中，vue文件第一行有波浪线提示，虽然项目能正常运行，但看着难受
+  在.eslintrc中添加
+  requireConfigFile: false
